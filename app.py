@@ -1,41 +1,32 @@
-import os
-import telegram
-from flask import Flask, request
-from telegram.ext import Dispatcher, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Bot, Update, KeyboardButton, ReplyKeyboardMarkup
+import telebot
+aa=[]
 
-# Initial Flask app
-app = Flask(__name__)
+API_TOKEN = '6191579103:AAHbR8ifnv9SDtZ86363NZEuprABIqR3o10'
 
-# 設定你的token
-bot = telegram.Bot(token=('6191579103:AAHbR8ifnv9SDtZ86363NZEuprABIqR3o10'))
-bot.send_message(chat_id = '6071117015', text ='你可以開始了')
-
-@app.route('/hook', methods=['POST'])
-def webhook_handler():
-    """Set route /hook with POST method will trigger this method."""
-    if request.method == "POST":
-        update = telegram.Update.de_json(request.get_json(force=True), bot)
-
-        # Update dispatcher process that handler to process this message
-        dispatcher.process_update(update)
-    return 'ok'
+bot = telebot.TeleBot(API_TOKEN)
 
 
-def reply_handler(update: Update, _: CallbackContext):
-    """自動回復"""
-    user = update.message.from_user
-    userText = update.message.text
-    update.message.reply_text(userText)
+# Handle '/start' and '/help'
+@bot.message_handler(commands=['help', 'start'])
+def send_welcome(message):
+    bot.reply_to(message, """\
+Hi there, I am EchoBot.
+I am here to echo your kind words back to you. Just say anything nice and I'll say the exact same thing to you!\
+""")
 
-# New a dispatcher for bot
-dispatcher = Dispatcher(bot, None)
 
-# Add handler for handling message, there are many kinds of message. For this handler, it particular handle text
-# message.
-dispatcher.add_handler(MessageHandler(Filters.text, reply_handler))
+# Handle all other messages with content_type 'text' (content_types defaults to ['text'])
+@bot.message_handler(func=lambda message: True)
+def echo_message(message):
+    x=message.text
+    print(x)
+    print(type(x))
+    aa=x.split(" ")
+    print(aa)
+    big=float(aa[0])
+    small=float(aa[1])
+    ans=big/((big-small)*1.1)
+    bot.reply_to(message, ans)
 
-if __name__ == "__main__":
-    # Running server
-    port = int(os.environ.get('PORT', 27017))
-    app.run(host='0.0.0.0', port=port)
+
+bot.infinity_polling()
